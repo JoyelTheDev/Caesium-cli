@@ -1,0 +1,57 @@
+input: "myapp.jar"
+output: "myapp-obfuscated.jar"
+
+dictionary: NUMBERS
+
+libraries:
+  - "libs/somelib.jar"
+
+mutators:
+  shuffle:
+    enabled: true
+
+  trim:
+    enabled: true
+
+  lineNumber:
+    enabled: true
+    type: 0
+
+  localVariable:
+    enabled: true
+    type: 0
+
+  string:
+    enabled: true
+    exclusions:
+      - "com/example/DoNotObfuscate"
+
+  controlFlow:
+    enabled: true
+
+  number:
+    enabled: true
+
+  polymorph:
+    enabled: false
+
+  reference:
+    enabled: true
+    type: 1       # 1 or 0
+    exclusions: []
+
+  classFolder:
+    enabled: false
+
+  badAnnotation:
+    enabled: false
+
+  imageCrash:
+    enabled: false
+    
+  classRename:
+    enabled: true
+  methodRename:
+    enabled: true
+  fieldRename:
+    enabled: true
