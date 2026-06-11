@@ -6,6 +6,8 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -13,9 +15,9 @@ import dev.sim0n.caesium.PreRuntime;
 import dev.sim0n.caesium.exception.CaesiumException;
 import dev.sim0n.caesium.util.wrapper.impl.ClassWrapper;
 
-import javax.swing.*;
-
 public class CaesiumClassWriter extends ClassWriter {
+    private static final Logger logger = LogManager.getLogger(CaesiumClassWriter.class);
+
     public CaesiumClassWriter(int flags) {
         super(flags);
     }
@@ -29,7 +31,6 @@ public class CaesiumClassWriter extends ClassWriter {
         try {
             first = deriveCommonSuperName(type1, type2);
         } catch (CaesiumException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -37,7 +38,6 @@ public class CaesiumClassWriter extends ClassWriter {
         try {
             second = deriveCommonSuperName(type2, type1);
         } catch (CaesiumException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -50,7 +50,6 @@ public class CaesiumClassWriter extends ClassWriter {
         try {
             return getCommonSuperClass(returnClazz(type1).superName, returnClazz(type2).superName);
         } catch (CaesiumException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -78,7 +77,7 @@ public class CaesiumClassWriter extends ClassWriter {
     private ClassNode returnClazz(String ref) throws CaesiumException {
         ClassWrapper clazz = PreRuntime.getClassPath().get(ref);
         if (clazz == null) {
-            JOptionPane.showMessageDialog(null, "Couldn't find " + ref + " in classpath.", "Error", JOptionPane.ERROR_MESSAGE);
+            logger.warn("Couldn't find {} in classpath, falling back to java/lang/Object", ref);
             throw new CaesiumException(ref + " does not exist in classpath!", null);
         }
 
