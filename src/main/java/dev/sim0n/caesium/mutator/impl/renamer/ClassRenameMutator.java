@@ -7,6 +7,7 @@ import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 import org.objectweb.asm.tree.ClassNode;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,5 +78,9 @@ public class ClassRenameMutator extends ClassMutator {
         });
 
         logger.info("Renamed {} classes", counter);
+    }
+
+    public Map<String, String> getMappings() {
+        return Collections.unmodifiableMap(mappings);
     }
 }
