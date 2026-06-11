@@ -53,8 +53,8 @@ jobs:
           echo "next_number=$NEXT_NUM" >> $GITHUB_OUTPUT
           
           # Rename the JAR
-          ORIGINAL_JAR="target/jnt-1.0-SNAPSHOT-jar-with-dependencies.jar"
-          NEW_JAR="target/jnt-${NEXT_NUM}.jar"
+          ORIGINAL_JAR="target/*.jar"
+          NEW_JAR="target/*-${NEXT_NUM}.jar"
           
           if [ ! -f "$ORIGINAL_JAR" ]; then
             echo "❌ ERROR: Original JAR not found at $ORIGINAL_JAR"
@@ -64,8 +64,8 @@ jobs:
           
           mv "$ORIGINAL_JAR" "$NEW_JAR"
           echo "JAR_FILE=$NEW_JAR" >> "$GITHUB_ENV"
-          echo "JAR_NAME=jnt-${NEXT_NUM}.jar" >> "$GITHUB_ENV"
-          echo "✅ Renamed to: jnt-${NEXT_NUM}.jar"
+          echo "JAR_NAME=*-${NEXT_NUM}.jar" >> "$GITHUB_ENV"
+          echo "✅ Renamed to: Ceasium-${NEXT_NUM}.jar"
 
       # -----------------------------
       # Generate changelog (since last tag)
