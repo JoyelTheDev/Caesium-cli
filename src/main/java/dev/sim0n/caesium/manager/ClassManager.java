@@ -5,6 +5,7 @@ import dev.sim0n.caesium.Caesium;
 import dev.sim0n.caesium.exception.CaesiumException;
 import dev.sim0n.caesium.mutator.impl.ClassFolderMutator;
 import dev.sim0n.caesium.mutator.impl.crasher.ImageCrashMutator;
+import dev.sim0n.caesium.mutator.impl.renamer.ClassRenameMutator;
 import dev.sim0n.caesium.util.ByteUtil;
 import dev.sim0n.caesium.util.wrapper.impl.ClassWrapper;
 
@@ -34,6 +35,8 @@ public class ClassManager {
 
     private final ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
 
+    private String manifestMainClass = null;
+
     public void parseJar(File input) throws Exception {
         logger.info("Loading classes...");
 
@@ -53,8 +56,14 @@ public class ClassManager {
                     if (name.equals("META-INF/MANIFEST.MF")) {
                         String manifest = new String(data);
 
-                        manifest = manifest.substring(0, manifest.length() - 2);
+                        for (String line : manifest.split("\r?\n")) {
+                            if (line.startsWith("Main-Class:")) {
+                                manifestMainClass = line.substring("Main-Class:".length()).trim();
+                                break;
+                            }
+                        }
 
+                        manifest = manifest.substring(0, manifest.length() - 2);
                         manifest += String.format("Obfuscated-By: Caesium %s\r\n", Caesium.VERSION);
 
                         data = manifest.getBytes();
@@ -72,10 +81,25 @@ public class ClassManager {
     public void handleMutation() throws Exception {
         classes.forEach((node, name) -> mutatorManager.handleMutation(node));
 
-        // Phase 2: run finish passes (renaming etc.) so the classes map is fully updated
         mutatorManager.handleMutationFinish();
 
-        // Phase 3: write the ZIP now that all mutations (including renames) are applied
+        if (manifestMainClass != null) {
+            ClassRenameMutator classRenameMutator = mutatorManager.getMutator(ClassRenameMutator.class);
+            if (classRenameMutator != null && classRenameMutator.isEnabled()) {
+                String internalName = manifestMainClass.replace('.', '/');
+                String renamed = classRenameMutator.getMappings().get(internalName);
+                if (renamed != null) {
+                    String newMainClass = renamed.replace('/', '.');
+                    byte[] manifestData = resources.get("META-INF/MANIFEST.MF");
+                    if (manifestData != null) {
+                        String manifest = new String(manifestData)
+                                .replace("Main-Class: " + manifestMainClass, "Main-Class: " + newMainClass);
+                        resources.put("META-INF/MANIFEST.MF", manifest.getBytes());
+                    }
+                }
+            }
+        }
+
         Optional<ImageCrashMutator> imageCrashMutator = Optional.ofNullable(mutatorManager.getMutator(ImageCrashMutator.class));
         Optional<ClassFolderMutator> classFolderMutator = Optional.ofNullable(mutatorManager.getMutator(ClassFolderMutator.class));
 
